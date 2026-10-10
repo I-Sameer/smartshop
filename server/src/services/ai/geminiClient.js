@@ -54,9 +54,11 @@ export class GeminiClient {
       console.warn('[Gemini SDK Error]:', err.message || err);
     }
 
-    // 2. Direct REST endpoints with both query param and headers
-    const candidateModels = [model, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
-    for (const m of candidateModels) {
+    // 2. Direct REST endpoints with verified models
+    const candidateModels = [model, 'gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.5-pro', 'gemini-2.5-flash-lite'];
+    const uniqueModels = [...new Set(candidateModels.filter(Boolean))];
+
+    for (const m of uniqueModels) {
       const endpoints = [
         `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`,
         `https://generativelanguage.googleapis.com/v1/models/${m}:generateContent?key=${apiKey}`
@@ -65,14 +67,13 @@ export class GeminiClient {
       for (const endpoint of endpoints) {
         try {
           const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 4000);
+          const timer = setTimeout(() => controller.abort(), 6000);
 
           const res = await fetch(endpoint, {
             method: 'POST',
             signal: controller.signal,
             headers: {
-              'Content-Type': 'application/json',
-              'x-goog-api-key': apiKey
+              'Content-Type': 'application/json'
             },
             body: JSON.stringify({
               contents: [{ parts: [{ text: prompt }] }],
@@ -96,7 +97,6 @@ export class GeminiClient {
           } else {
             const errData = await res.json().catch(() => ({}));
             this.lastError = errData?.error?.message || `HTTP ${res.status}`;
-            console.warn(`[Gemini REST Error ${res.status}]:`, this.lastError);
           }
         } catch (fetchErr) {
           this.lastError = fetchErr.message;

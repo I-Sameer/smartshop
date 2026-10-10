@@ -9,7 +9,7 @@ export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
-  GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-3.5-flash',
+  GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
   USE_LOCAL_STORAGE: process.env.USE_LOCAL_STORAGE === 'true'
 };
 

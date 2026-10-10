@@ -90,10 +90,19 @@ export class ShoppingAgent {
     // Sort by match score descending
     scoredProducts.sort((a, b) => b.matchScore - a.matchScore);
 
-    // Filter top recommendations
-    let recommendations = scoredProducts.filter(p => p.withinBudget).slice(0, 3);
+    // Filter top recommendations with category keyword relevance
+    const isLaptopQuery = /laptop|notebook|macbook|chromebook|computer|thinkpad/i.test(cleanQuery);
+    let candidatePool = scoredProducts;
+    if (isLaptopQuery) {
+      const laptopsOnly = scoredProducts.filter(p => /laptop|thinkpad|macbook|inspiron|notebook|computer/i.test(p.productName));
+      if (laptopsOnly.length > 0) {
+        candidatePool = laptopsOnly;
+      }
+    }
+
+    let recommendations = candidatePool.filter(p => p.withinBudget).slice(0, 3);
     if (recommendations.length === 0) {
-      recommendations = scoredProducts.slice(0, 3);
+      recommendations = candidatePool.slice(0, 3);
     }
 
     // Dynamic clarifying question if confidence threshold requires user alignment
