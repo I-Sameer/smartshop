@@ -2,6 +2,7 @@ import { ShoppingAgent } from './shoppingAgent.js';
 import { KnowledgeRagAgent } from './knowledgeRagAgent.js';
 import { LogisticsAgent } from './logisticsAgent.js';
 import { OperationsAgent } from './operationsAgent.js';
+import { GeminiClient } from './geminiClient.js';
 import { db } from '../../config/db.js';
 
 export class MasterRouter {
