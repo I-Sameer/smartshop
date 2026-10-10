@@ -102,10 +102,14 @@ export class ShoppingAgent {
       clarifyingQuestion = `Would you like to explore alternative configurations or adjust the budget target?`;
     }
 
+    // Dynamic personalized AI synthesis via Gemini Flash
+    const aiCommentary = await GeminiClient.generateShoppingAdvice(cleanQuery, recommendations);
+
     return {
       interpretedRequirement,
       budget: budget || (recommendations[0] ? recommendations[0].price : 1000),
       extractedFeatures,
+      aiCommentary: aiCommentary || `Based on your request for "${cleanQuery}", we identified these optimal hardware configurations.`,
       recommendations: recommendations.map(r => ({
         productId: r.productId,
         productName: r.productName,

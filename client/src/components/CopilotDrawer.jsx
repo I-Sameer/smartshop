@@ -160,6 +160,18 @@ export const CopilotDrawer = () => {
                         )}
                       </div>
 
+                      {msg.data.aiCommentary && (
+                        <div className="p-3.5 rounded-xl bg-gradient-to-br from-[#f0f7ff] to-[#f5f5f7] border border-[#d0e4ff] text-[#1d1d1f]">
+                          <div className="flex items-center gap-1.5 text-[#0071e3] text-[12px] font-semibold mb-1">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>Gemini AI Hardware Assessment</span>
+                          </div>
+                          <p className="text-[13px] leading-relaxed">
+                            {msg.data.aiCommentary}
+                          </p>
+                        </div>
+                      )}
+
                       {/* Product Recommendations List */}
                       <div className="space-y-2.5">
                         <span className="text-[12px] font-semibold text-[#86868b] uppercase tracking-wider block">

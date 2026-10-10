@@ -21,11 +21,17 @@ export class GeminiClient {
     }
   }
 
+    static lastError = null;
+
   static async generate(prompt, systemInstruction = '') {
     const apiKey = this.getApiKey();
     const model = this.getModel();
-    if (!apiKey) return null;
+    if (!apiKey) {
+      console.warn('[Gemini Client] No GEMINI_API_KEY found in environment or server/.env');
+      return null;
+    }
 
+    // 1. Try official @google/genai SDK
     try {
       const ai = this.getClient();
       if (ai) {
@@ -35,6 +41,7 @@ export class GeminiClient {
           config: systemInstruction ? { systemInstruction } : undefined
         });
         if (response && response.text) {
+          this.lastError = null;
           return {
             text: response.text.trim(),
             model,
@@ -43,19 +50,22 @@ export class GeminiClient {
         }
       }
     } catch (err) {
+      this.lastError = err.message || String(err);
+      console.warn('[Gemini SDK Error]:', err.message || err);
     }
 
-    const candidateModels = [model, 'gemini-2.0-flash', 'gemini-1.5-flash'];
+    // 2. Direct REST endpoints with both query param and headers
+    const candidateModels = [model, 'gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
     for (const m of candidateModels) {
       const endpoints = [
-        `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,
-        `https://aiplatform.googleapis.com/v1/publishers/google/models/${m}:generateContent`
+        `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/${m}:generateContent?key=${apiKey}`
       ];
 
       for (const endpoint of endpoints) {
         try {
           const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 3000);
+          const timer = setTimeout(() => controller.abort(), 4000);
 
           const res = await fetch(endpoint, {
             method: 'POST',
@@ -76,19 +86,42 @@ export class GeminiClient {
             const data = await res.json();
             const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
             if (text) {
+              this.lastError = null;
               return {
                 text: text.trim(),
                 model: m,
                 engine: 'GEMINI_REST_API'
               };
             }
+          } else {
+            const errData = await res.json().catch(() => ({}));
+            this.lastError = errData?.error?.message || `HTTP ${res.status}`;
+            console.warn(`[Gemini REST Error ${res.status}]:`, this.lastError);
           }
         } catch (fetchErr) {
+          this.lastError = fetchErr.message;
         }
       }
     }
 
     return null;
+  }
+
+  static async generateShoppingAdvice(query, products) {
+    const productSummaries = products.map((p, i) => 
+      `${i + 1}. ${p.name} ($${p.price}, ${p.rating}★, Specs: ${JSON.stringify(p.specifications || {})})`
+    ).join('\n');
+
+    const prompt = `You are an expert autonomous e-commerce laptop advisor.
+User inquiry: "${query}"
+
+Here are the top matched products in inventory:
+${productSummaries}
+
+Write a concise, personalized, high-value advice paragraph (2-3 sentences) directly addressing the user's specific workflow and explaining which machine is the best match and why. Avoid generic filler words.`;
+
+    const result = await this.generate(prompt, 'You are a technical hardware advisor. Be direct, authoritative, and specific.');
+    return result ? result.text : null;
   }
 
   static async analyzeShoppingIntent(query) {

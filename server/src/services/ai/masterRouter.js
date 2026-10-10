@@ -71,6 +71,7 @@ export class MasterRouter {
     });
 
     const aiSummaryText = agentResult?.answer 
+      || agentResult?.aiCommentary
       || (agentResult?.recommendations ? `Found ${agentResult.recommendations.length} tailored recommendations.` : agentResult?.message || '');
 
     db.appendChatMessage(individualKey, {
