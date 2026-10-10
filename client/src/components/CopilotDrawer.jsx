@@ -134,6 +134,20 @@ export const CopilotDrawer = () => {
                     </div>
                   )}
 
+                  {/* Gemini API Alert if Key has authentication issues */}
+                  {msg.geminiError && (
+                    <div className="p-3 rounded-xl bg-[#fff2f0] border border-[#ffccc7] text-[#cf1322] text-[12px] space-y-1">
+                      <div className="flex items-center gap-1.5 font-semibold">
+                        <span>⚠️ Gemini API Call Status</span>
+                      </div>
+                      <p className="text-[11px] leading-normal text-[#820014]">
+                        {msg.geminiError.includes('401') || msg.geminiError.includes('UNAUTHENTICATED')
+                          ? 'Google returned 401 UNAUTHENTICATED. The key provided is a GCP token with ACCESS_TOKEN_TYPE_UNSUPPORTED. Please paste an active Google AI Studio key (starts with AIzaSy...) into server/.env for live LLM generation.'
+                          : `Gemini API response: ${msg.geminiError}`}
+                      </p>
+                    </div>
+                  )}
+
                   {/* Message Text */}
                   {msg.text && (
                     <p className="leading-relaxed text-[15px]">{msg.text}</p>

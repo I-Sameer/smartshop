@@ -102,7 +102,8 @@ export class MasterRouter {
       confidence,
       latencyMs,
       result: agentResult,
-      individualKey
+      individualKey,
+      geminiError: GeminiClient.lastError
     };
   }
 }

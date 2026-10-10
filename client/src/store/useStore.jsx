@@ -269,6 +269,8 @@ export const StoreProvider = ({ children }) => {
         confidence: response.confidence,
         latencyMs: response.latencyMs,
         data: response.result,
+        text: response.result?.answer || response.result?.aiCommentary || response.result?.message || '',
+        geminiError: response.geminiError || response.result?.geminiError || null,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setCopilotMessages(prev => [...prev, aiMsg]);
